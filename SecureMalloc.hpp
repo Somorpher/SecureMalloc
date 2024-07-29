@@ -37,18 +37,23 @@
 #define __with_optimize_perform__ optimize("3")
 #endif
 
+#if defined(__GNUC__) || defined(__clang__)
+#define __hex_parser_attr__ __attribute__((pure, nothrow, always_inline, no_icf, stack_protect, optimize("2"), tainted_args))
+#else
+#define __hex_parser_attr__ [[nothrow]]
+#endif
+
 // for converting uintptr_t to hex as string
-template <typename T> const std::string hexParser(const T _bytes) noexcept
+template <typename T> __hex_parser_attr__ inline static const std::string hexParser(const T _bytes) noexcept
 {
-     if (sizeof(_bytes) > 0) [[likely]]
+    if (sizeof(_bytes) > 0) [[likely]]
     {
         std::stringstream hex_parse;
         hex_parse << "0x" << std::hex << _bytes;
         return hex_parse.str();
     }
-    return "0x0";
+    return std::string("0x0");
 };
-
 
 template <typename T> class SecureMalloc
 {
@@ -58,15 +63,18 @@ template <typename T> class SecureMalloc
     bool erased_ = false;
     std::string memory_address_;
 
-    public: __attribute__((mode(__pointer__))) T *data_ = nullptr;
-    private: __attribute__((mode(__word__))) size_t size_ = 0UL;
+  public:
+    __attribute__((mode(__pointer__))) T *data_ = nullptr;
+
+  private:
+    __attribute__((mode(__word__))) size_t size_ = 0UL;
     __attribute__((mode(__pointer__))) T *data_tmp_ = nullptr;
 
   public:
     __attribute__((nothrow, __with_optimize_perform__)) SecureMalloc() noexcept
     {
         this->data_ = new (std::nothrow) T;
-        this->data_tmp_ = new(std::nothrow) T(*this->data_);
+        this->data_tmp_ = new (std::nothrow) T(*this->data_);
         std::uintptr_t addr_ptr = reinterpret_cast<std::uintptr_t>(this->data_);
         this->memory_address_ = hexParser<std::uintptr_t>(addr_ptr);
         this->size_ = sizeof(T);
@@ -74,26 +82,12 @@ template <typename T> class SecureMalloc
 
     __attribute__((nothrow, __with_optimize_perform__, access(read_only, 1))) explicit SecureMalloc(const T &_v) noexcept
     {
-        if (sizeof(_v) > 0)
-        {
-            this->data_ = new (std::nothrow) T(std::exchange(_v));
-            this->data_tmp_ = new(std::nothrow) T(*this->data_);
-            std::uintptr_t addr_ptr = reinterpret_cast<std::uintptr_t>(this->data_);
-            this->memory_address_ = hexParser<std::uintptr_t>(addr_ptr);
-            this->size_ = sizeof(_v);
-        }
+        this->CommonInitialization(std::move(_v));
     };
 
     __attribute__((nothrow, __with_optimize_perform__, access(read_only, 1))) explicit SecureMalloc(const T &&_v) noexcept
     {
-        if (sizeof(_v) > 0)
-        {
-            this->data_ = new (std::nothrow) T(std::move(_v));
-            this->data_tmp_ = new(std::nothrow) T(*this->data_);
-            std::uintptr_t addr_ptr = reinterpret_cast<std::uintptr_t>(this->data_);
-            this->memory_address_ = hexParser<std::uintptr_t>(addr_ptr);
-            this->size_ = sizeof(_v);
-        }
+        this->CommonInitialization(std::move(_v));
     };
 
     /**
@@ -149,7 +143,7 @@ template <typename T> class SecureMalloc
     /**
      * Unlock access to data_ section
      */
-    __attribute__((nothrow, __with_optimize_perform__, always_inline, no_sanitize_address, no_sanitize_coverage, no_sanitize_undefined)) inline void Unlock(void) noexcept
+    __attribute__((nothrow, __with_optimize_perform__, always_inline)) inline void Unlock(void) noexcept
     {
         this->locked_ = false;
         *this->data_ = *this->data_tmp_;
@@ -161,18 +155,19 @@ template <typename T> class SecureMalloc
     SecureMalloc(const SecureMalloc &&other) noexcept : data_(std::exchange(other.data_)), size_(other.size_), locked_(other.locked_) {};
     SecureMalloc &operator=(const SecureMalloc &) noexcept = delete;
     SecureMalloc &operator=(const SecureMalloc &&) noexcept = delete;
+    
     __attribute__((nothrow, __with_optimize_perform__, always_inline, leaf, no_sanitize_address, no_sanitize_coverage, no_sanitize_undefined, warn_unused_result)) inline const bool &operator==(
         const SecureMalloc &other) const noexcept
     {
-        return this->memory_address_.compare(other.address_) == 0; 
+        return this->memory_address_.compare(other.address_) == 0;
     };
 
     /**
      * Clean Data.
      */
-    __attribute__((nothrow, __with_optimize_perform__, always_inline, no_sanitize_address, no_sanitize_coverage, no_sanitize_undefined)) inline void Deallocate() noexcept
+    __attribute__((nothrow, __with_optimize_perform__, always_inline)) inline void Deallocate() noexcept
     {
-        if (!this->erased_)
+        if (this->erased_ == false)
         {
             this->erased_ = true;
             if (this->data_ != nullptr)
@@ -185,8 +180,23 @@ template <typename T> class SecureMalloc
 
     ~SecureMalloc() noexcept
     {
-        this->Deallocate();
+        if (!this->erased_)
+            this->Deallocate();
     };
+
+    private:
+
+    __attribute__((__with_optimize_perform__, nothrow, pure, always_inline, no_sanitize_address, stack_protect)) inline void CommonInitialization(T& _v) noexcept {
+        if (sizeof(_v) > 0)
+        {
+            this->data_ = new (std::nothrow) T(std::exchange(_v));
+            this->data_tmp_ = new (std::nothrow) T(*this->data_);
+            std::uintptr_t addr_ptr = reinterpret_cast<std::uintptr_t>(this->data_);
+            this->memory_address_ = hexParser<std::uintptr_t>(addr_ptr);
+            this->size_ = sizeof(_v);
+        }
+    };
+
 };
 
 #endif
