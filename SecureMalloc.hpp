@@ -1,11 +1,28 @@
 #pragma once
 
+#ifndef _GLIBCXX_STRING
 #include <string>
+#endif
+
+#ifndef _GLIBCXX_UTILITY
 #include <utility>
+#endif
+
+#ifndef _STDINT_H
 #include <cstdint>
+#endif
+
+#ifndef _NEW_
 #include <new>
+#endif
+
+#ifndef _GLIBCXX_ALGORITHM
 #include <algorithm>
+#endif
+
+#ifndef _GLIBCXX_IOSTREAM
 #include <iostream>
+#endif
 
 // defining this macro for debugging purposes, remove for production mode.
 #define IS_DEBUGGING_CODE 1
