@@ -8,7 +8,7 @@ Secure Memory management utility, allows for secure memory allocation and secure
 
 # How to Use
 
-### Simple Allocator Instatiation
+### Simple Allocator Instatiator
 
 ```cpp
 // dont need to include common libraries/headers, SecureMalloc has already access to most of them.
