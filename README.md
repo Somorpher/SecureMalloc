@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
 ### Get Block Address
 
 ```cpp
-    std::string get_address = StrAlloc.Deallocate();    // get memory location where object/data is stored. You should use direct initialization.
+    std::string get_address = StrAlloc.getAddress();    // get memory location where object/data is stored. You should use direct initialization.
 ```
 
 ### Get Memory Block Data
