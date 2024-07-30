@@ -1,4 +1,4 @@
-# SecureMalloc Module
+# SecureMalloc
 
 > Type = Module
 
