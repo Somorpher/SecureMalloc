@@ -55,9 +55,9 @@ template <typename T> __hex_parser_attr__ inline static const std::string hexPar
     return std::string("0x0");
 };
 
-template <typename TX> struct xValue
+template <typename TX> struct SafeDataAccess
 {
-    TX *data{nullptr};
+    TX data{};
     size_t size{0};
     bool null{true};
 };
@@ -75,28 +75,47 @@ template <typename T> class SecureMalloc
     __attribute__((mode(__pointer__))) T *data_tmp_ = nullptr;
 
   public:
+    /**
+     * Default Empty initialization constructor
+     */
     __attribute__((nothrow, __with_optimize_perform__)) SecureMalloc() noexcept
     {
         this->data_ = new (std::nothrow) T;
-        this->data_tmp_ = this->data_ != nullptr ? new (std::nothrow) T(*this->data_) : new (std::nothrow) T;
+        this->data_tmp_ = new (std::nothrow) T;
         std::uintptr_t addr_ptr = reinterpret_cast<std::uintptr_t>(this->data_);
         this->memory_address_ = hexParser<std::uintptr_t>(addr_ptr);
         this->size_ = sizeof(T);
     };
-
-    __attribute__((nothrow, __with_optimize_perform__, access(read_only, 1))) explicit SecureMalloc(const T &_v) noexcept
+    /**
+     * T& reference argument initialization constructor
+     */
+    __attribute__((nothrow, __with_optimize_perform__, access(read_write, 1))) explicit SecureMalloc(T &_v) noexcept
     {
-        this->CommonInitialization(std::move(_v));
+        std::cout << "Executing Constructor T&_v\n";
+        this->InitializeBlock(_v);
+    };
+    /**
+     * T* Pointer argument initialization constructor
+     */
+    __attribute__((nothrow, __with_optimize_perform__)) explicit SecureMalloc(T *__restrict__ _v) noexcept
+    {
+        std::cout << "Executing Constructor T *__restrict__ _v\n";
+        this->InitializeBlock(std::move_if_noexcept(_v));
+    };
+    /**
+     * move semantic const argument initialization constructor
+     */
+    __attribute__((nothrow, __with_optimize_perform__, access(read_write, 1))) explicit SecureMalloc(T &&_v) noexcept
+    {
+        std::cout << "Executing Constructor T && _v\n";
+        this->InitializeBlock(std::move_if_noexcept(_v));
     };
 
-    __attribute__((nothrow, __with_optimize_perform__, access(read_only, 1))) explicit SecureMalloc(const T &&_v) noexcept
-    {
-        this->CommonInitialization(std::move(_v));
-    };
+    // only allows for move semantics
+    SecureMalloc(const SecureMalloc &&other) noexcept : data_(std::exchange(other.data_)), size_(other.size_), locked_(other.locked_) {};
 
     // Delete operators
     SecureMalloc(const SecureMalloc &) noexcept = delete;
-    SecureMalloc(const SecureMalloc &&other) noexcept : data_(std::exchange(other.data_)), size_(other.size_), locked_(other.locked_) {};
     SecureMalloc &operator=(const SecureMalloc &) noexcept = delete;
     SecureMalloc &operator=(const SecureMalloc &&) noexcept = delete;
 
@@ -115,23 +134,33 @@ template <typename T> class SecureMalloc
     /**
      * get data_ section.
      * @param void
-     * @return T* read-write access to private data member pointer
+     * @return SafeDataAccess<T> read-only access to private data member pointer
      */
-    __attribute__((nothrow, __with_optimize_perform__, leaf, const, always_inline)) inline xValue<T> getData(void) noexcept
+    __attribute__((nothrow, __with_optimize_perform__, leaf, const, always_inline)) inline const SafeDataAccess<T> getData(void) noexcept
     {
-        struct xValue<T> _rv;
+        struct SafeDataAccess<T> _rv;
         if (this->data_ == nullptr || this->locked_)
         {
             return _rv;
         }
-        _rv.data = this->data_;
+        _rv.data = *this->data_;
         _rv.null = false;
         _rv.size = sizeof(*this->data_);
         return _rv;
     };
 
     /**
-     * get memory address data section.
+     * get data_ section.
+     * @param void
+     * @return T* read-write access to private data member pointer
+     */
+    __attribute__((nothrow, __with_optimize_perform__, leaf, const, always_inline)) inline T *getRawPtr(void) noexcept
+    {
+        return this->locked_ ? this->data_tmp_ : this->data_;
+    };
+
+    /**
+     * get memory address section.
      * @param void
      * @return std::intptr_t read-only access to private data member pointer address_
      */
@@ -144,7 +173,22 @@ template <typename T> class SecureMalloc
      * set data_ section.
      * @param T& new data
      */
-    __attribute__((nothrow, __with_optimize_perform__, always_inline)) inline void Allocate(T &_d) noexcept
+    __attribute__((nothrow, __with_optimize_perform__, always_inline, access(read_only, 1))) inline void Allocate(T &_d) noexcept
+    {
+        this->loc_mtx_.lock();
+        if (this->locked_)
+        {
+            this->loc_mtx_.unlock();
+            return;
+        }
+        *this->data_ = std::move(_d);
+        this->loc_mtx_.unlock();
+    };
+    /**
+     * set data_ section.
+     * @param T new data
+     */
+    __attribute__((nothrow, __with_optimize_perform__, always_inline, access(read_write, 1))) inline void Allocate(T _d) noexcept
     {
         this->loc_mtx_.lock();
         if (this->locked_)
@@ -219,11 +263,33 @@ template <typename T> class SecureMalloc
     };
 
   private:
-    __attribute__((__with_optimize_perform__, stack_protect, zero_call_used_regs("all"), nothrow, always_inline, no_sanitize_address)) inline void CommonInitialization(T &_v) noexcept
+    __attribute__((__with_optimize_perform__, stack_protect, zero_call_used_regs("all"), nothrow, always_inline, no_sanitize_address)) inline void InitializeBlock(T &_v) noexcept
     {
         if (sizeof(_v) > 0)
         {
-            this->data_ = new (std::nothrow) T(std::exchange(_v));
+            this->data_ = new (std::nothrow) T(_v);
+            this->data_tmp_ = new (std::nothrow) T;
+            std::uintptr_t addr_ptr = reinterpret_cast<std::uintptr_t>(this->data_);
+            this->memory_address_ = hexParser<std::uintptr_t>(addr_ptr);
+            this->size_ = sizeof(_v);
+        }
+    };
+    __attribute__((__with_optimize_perform__, stack_protect, zero_call_used_regs("all"), nothrow, always_inline, no_sanitize_address)) inline void InitializeBlock(T *__restrict__ _v) noexcept
+    {
+        if (sizeof(*_v) > 0 && _v != nullptr)
+        {
+            this->data_ = std::move_if_noexcept(_v);
+            this->data_tmp_ = new (std::nothrow) T;
+            std::uintptr_t addr_ptr = reinterpret_cast<std::uintptr_t>(this->data_);
+            this->memory_address_ = hexParser<std::uintptr_t>(addr_ptr);
+            this->size_ = sizeof(*_v);
+        }
+    };
+    __attribute__((__with_optimize_perform__, stack_protect, zero_call_used_regs("all"), nothrow, always_inline, no_sanitize_address)) inline void InitializeBlock(T &&_v) noexcept
+    {
+        if (sizeof(_v) > 0)
+        {
+            this->data_ = new (std::nothrow) T(std::move_if_noexcept(_v));
             this->data_tmp_ = this->data_ != nullptr ? new (std::nothrow) T(*this->data_) : new (std::nothrow) T;
             std::uintptr_t addr_ptr = reinterpret_cast<std::uintptr_t>(this->data_);
             this->memory_address_ = hexParser<std::uintptr_t>(addr_ptr);
