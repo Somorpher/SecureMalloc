@@ -2,7 +2,12 @@
 
 > Type = Module
 
-Thread-safe memory allocation class providing secure, optimized, and exception-safe memory management with locking, address tracking, and object ownership transfer. Includes methods for allocation, deallocation, locking, unlocking, and address retrieval.
+### Module
+The SecureMalloc module is a high-performance memory allocation class designed to provide secure and optimized memory management for a specific data type T. This module utilizes various optimization attributes to achieve exceptional performance, security, and reliability.
+The SecureMalloc class is a thread-safe memory allocation class that provides secure, optimized, and exception-safe memory management with locking, address tracking, and object ownership transfer. The class ensures proper memory deallocation and includes methods for allocation, deallocation, locking, unlocking, and address retrieval.
+
+### Optimization
+The SecureMalloc class achieves optimization through the use of various attributes and techniques that improve performance, security, and reliability.
 
 
 ## Description
