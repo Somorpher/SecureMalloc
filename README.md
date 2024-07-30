@@ -53,8 +53,14 @@ int main(int argc, char *argv[]) {
 ### Get Memory Block Data
 
 ```cpp
-    std::string *get_data = StrAlloc.getData();   // retrieve allocated data with read-write access control, returns a pointer to the data
-    std::string get_data = *StrAlloc.getData();   // retrieve allocated data with read-only access control, data itself.
+  /**
+    * getData will return a structure containing the following entities:
+    * -> data(T*)        a pointer to allocated data or nullptr if locked
+    * -> null(bool)      true if data is locked
+    * -> size(size_t)    the size of the data
+    **/
+    std::string *get_data = StrAlloc.getData();   // retrieve allocated data with read-write access, returns a pointer to the data
+    std::string get_data = *StrAlloc.getData();   // retrieve allocated data with read-only access, data itself.
 ```
 
 ### Lock Memory Block
