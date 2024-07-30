@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
     StrAlloc.Unlock();    // unlocks access to data block.
 ```
 
-### Use Case Example
+### Simple Implementation
 > object type allocation example
 ```cpp
 // include headers, main, etc...
@@ -126,29 +126,4 @@ int main(int argc, char *argv[]) {
     std::cout << "Vector Size After push(Unlocked): " << V.getData().data.size() << '\n';
 
     V.Deallocate(); // deallocation is optional...
-```
-
-### Example with Contigous Memory
-
-> allocate contigous memory(array, vector...)
-
-```cpp
-    std::vector<int> str_val({0});
-    str_val[0] = 23 ;
-    SecureMalloc<std::vector<int>> SecVal(str_val, true);
-    SafeDataAccess<std::vector<int>> _g = SecVal.getData();
-    std::cout << "str_val      = " << str_val[0] << "\n";
-    std::cout << "SecVal       = " << (SecVal.getData().null == false ? _g.data.at(0) : 111) << "\n";
-    std::cout << "Is Locked    = " << std::boolalpha << SecVal.isLocked() << "\n"; 
-    SecVal.Lock();
-    
-    _g.data.at(0) = 3;
-    std::cout << "SecVal With Lock  = " << (SecVal.getData().null == false ? _g.data.at(0) : 111) << "\n";
-    SecVal.Unlock();
-    _g.data.at(0) = 4;
-    std::cout << "SecVal After Lock = " << (SecVal.getData().null == false ? _g.data.at(0) : 111) << "\n";
-    SecVal.Allocate(std::move(str_val), false);
-    std::cout << "SecVal Original   = " << (SecVal.getData().null == false ?_g.data.at(0) : 111) << "\n";
-    SecVal.Deallocate();
-
 ```
