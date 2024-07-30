@@ -18,7 +18,7 @@
 #ifndef _GLIBCXX_IOSTREAM
 #include <iostream>
 #endif
- 
+
 // defining this macro for debugging purposes, remove for production mode.
 #define IS_DEBUGGING_CODE 1
 
@@ -58,9 +58,28 @@
 #define __attr_inj_idx0E__ __attribute__((__with_optimize_perform__, stack_protect, zero_call_used_regs("all"), nothrow, always_inline, no_sanitize_address))
 #define __attr_inj_idx0F__ __attribute__((__with_optimize_perform__, stack_protect, zero_call_used_regs("all"), nothrow, always_inline, no_sanitize_address))
 
-
 #else
 #define __hex_parser_attr__ [[nothrow]]
+
+#define __attr_inj_idx3__ [[nothrow]]
+#define __attr_inj_idx4__ [[nothrow]]
+#define __attr_inj_idx5__ [[nothrow]]
+#define __attr_inj_idx6__ [[nothrow]]
+#define __attr_inj_idx7__ [[nothrow]]
+#define __attr_inj_idx8__ [[nothrow]]
+#define __attr_inj_idx9__ [[nothrow]]
+#define __attr_inj_idx10__ [[nothrow]]
+#define __attr_inj_idx11__ [[nothrow]]
+#define __attr_inj_idx12__ [[nothrow]]
+#define __attr_inj_idx13__ [[nothrow]]
+#define __attr_inj_idx14__ [[nothrow]]
+#define __attr_inj_idx15__ [[nothrow]]
+#define __attr_inj_idx0A__ [[nothrow]]
+#define __attr_inj_idx0B__ [[nothrow]]
+#define __attr_inj_idx0C__ [[nothrow]]
+#define __attr_inj_idx0D__ [[nothrow]]
+#define __attr_inj_idx0E__ [[nothrow]]
+#define __attr_inj_idx0F__ [[nothrow]]
 #endif
 
 // for converting uintptr_t to hex as string
@@ -90,26 +109,27 @@ template <typename T> class SecureMalloc
     bool erased_ = false;
     std::string memory_address_;
     std::mutex loc_mtx_;
-    #ifdef __attr_inj_idx0__
+#ifdef __attr_inj_idx0__
     __attr_inj_idx0__ T *idx0_data_ = nullptr;
-    #else
+#else
     T *idx0_data_ = nullptr;
-    #endif
-    #ifdef __attr_inj_idx1__
+#endif
+#ifdef __attr_inj_idx1__
     __attr_inj_idx1__ size_t idx1_size_ = 0UL;
-    #else
+#else
     size_t idx1_size_ = 0UL;
-    #endif
-    #ifdef __attr_inj_idx2__
+#endif
+#ifdef __attr_inj_idx2__
     __attr_inj_idx2__ T *data_tmp_ = nullptr;
-    #else
+#else
     T *data_tmp_ = nullptr;
-    #endif
+#endif
 
   public:
     /**
      * Default Empty initialization constructor
      */
+
     __attr_inj_idx3__ SecureMalloc() noexcept
     {
         this->idx0_data_ = new (std::nothrow) T;
@@ -148,13 +168,11 @@ template <typename T> class SecureMalloc
     SecureMalloc &operator=(const SecureMalloc &&) noexcept = delete;
 
     // Comparision operators
-    __attr_inj_idx7__ inline const bool operator==(
-        const SecureMalloc &other) const noexcept
+    __attr_inj_idx7__ inline const bool operator==(const SecureMalloc &other) const noexcept
     {
         return this->memory_address_.compare(other.address_) == 0;
     };
-    __attr_inj_idx8__ inline const bool operator!=(
-        const SecureMalloc &other) const noexcept
+    __attr_inj_idx8__ inline const bool operator!=(const SecureMalloc &other) const noexcept
     {
         return this->memory_address_.compare(other.address_) != 0;
     };
@@ -291,12 +309,11 @@ template <typename T> class SecureMalloc
     };
 
   private:
-
-   /**
-   * Deals with l-value data/object
-   * @param T& l-value reference to _v(data to allocate)
-   * @returns void
-  */
+    /**
+     * Deals with l-value data/object
+     * @param T& l-value reference to _v(data to allocate)
+     * @returns void
+     */
     __attr_inj_idx0D__ inline void InitializeBlock(T &_v) noexcept
     {
         if (sizeof(_v) > 0)
@@ -308,11 +325,11 @@ template <typename T> class SecureMalloc
             this->idx1_size_ = sizeof(_v);
         }
     };
-      /**
-   * Deals with l-value/r-value object/data
-   * @param T* restricted l-value/r-value pointer address to _v(data to allocate)
-   * @returns void
-  */
+    /**
+     * Deals with l-value/r-value object/data
+     * @param T* restricted l-value/r-value pointer address to _v(data to allocate)
+     * @returns void
+     */
     __attr_inj_idx0E__ inline void InitializeBlock(T *__restrict__ _v) noexcept
     {
         if (sizeof(*_v) > 0 && _v != nullptr)
@@ -324,11 +341,11 @@ template <typename T> class SecureMalloc
             this->idx1_size_ = sizeof(*_v);
         }
     };
-     /**
-   * Deals with r-value data/object, l-value will not work as object needs to be moved with std::move.
-   * @param T&& r-value reference to _v(data to allocate)
-   * @returns void
-  */
+    /**
+     * Deals with r-value data/object, l-value will not work as object needs to be moved with std::move.
+     * @param T&& r-value reference to _v(data to allocate)
+     * @returns void
+     */
     __attr_inj_idx0F__ inline void InitializeBlock(T &&_v) noexcept
     {
         if (sizeof(_v) > 0)
