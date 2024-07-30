@@ -1,4 +1,7 @@
-# SecureMalloc
+# SecureMalloc Module
+
+> Type = Module
+
 Thread-safe memory allocation class providing secure, optimized, and exception-safe memory management with locking, address tracking, and object ownership transfer. Includes methods for allocation, deallocation, locking, unlocking, and address retrieval.
 
 
@@ -28,8 +31,9 @@ the class is designed to provide a secure and efficient memory allocation mechan
 ### basic Instatiation
 
 ```cpp
-// dont need to include common libraries/headers, SecureMalloc has already access to most of them.
 #include "path/to/SecureMalloc.hpp"
+
+using namespace SecureMallocModule; // access to module
 
 int main(int argc, char *argv[]) {
     SecureMalloc<std::string> StrAlloc; // this allocates a string into memory.
