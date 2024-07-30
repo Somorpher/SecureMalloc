@@ -42,7 +42,7 @@
 #else
 #define __hex_parser_attr__ [[nothrow]]
 #endif
- 
+
 // for converting uintptr_t to hex as string
 template <typename T> __hex_parser_attr__ inline static const std::string hexParser(const T _bytes) noexcept
 {
@@ -62,6 +62,7 @@ template <typename T> class SecureMalloc
     bool locked_ = false;
     bool erased_ = false;
     std::string memory_address_;
+    std::mutex loc_mtx_;
 
   public:
     __attribute__((mode(__pointer__))) T *data_ = nullptr;
@@ -74,7 +75,7 @@ template <typename T> class SecureMalloc
     __attribute__((nothrow, __with_optimize_perform__)) SecureMalloc() noexcept
     {
         this->data_ = new (std::nothrow) T;
-        this->data_tmp_ = new (std::nothrow) T(*this->data_);
+        this->data_tmp_ = this->data_ != nullptr ? new (std::nothrow) T(*this->data_) : new (std::nothrow) T;
         std::uintptr_t addr_ptr = reinterpret_cast<std::uintptr_t>(this->data_);
         this->memory_address_ = hexParser<std::uintptr_t>(addr_ptr);
         this->size_ = sizeof(T);
@@ -116,9 +117,14 @@ template <typename T> class SecureMalloc
      */
     __attribute__((nothrow, __with_optimize_perform__, always_inline)) inline void Allocate(T &_d) noexcept
     {
+        this->loc_mtx_.lock();
         if (this->locked_)
+        {
+            this->loc_mtx_.unlock();
             return;
+        }
         *this->data_ = std::move(_d);
+        this->loc_mtx_.unlock();
     };
 
     /**
@@ -134,10 +140,9 @@ template <typename T> class SecureMalloc
      */
     __attribute__((nothrow, __with_optimize_perform__, always_inline, no_sanitize_address, no_sanitize_coverage, no_sanitize_undefined)) inline void Lock(void) noexcept
     {
+        this->loc_mtx_.lock();
         this->locked_ = true;
-        *this->data_tmp_ = *this->data_;
-        delete this->data_;
-        this->data_ = nullptr;
+        this->loc_mtx_.unlock();
     };
 
     /**
@@ -145,17 +150,16 @@ template <typename T> class SecureMalloc
      */
     __attribute__((nothrow, __with_optimize_perform__, always_inline)) inline void Unlock(void) noexcept
     {
-        this->locked_ = false;
-        *this->data_ = *this->data_tmp_;
-        delete this->data_tmp_;
-        this->data_tmp_ = nullptr;
+        this->loc_mtx_.lock();
+        this->locked_ =false;
+        this->loc_mtx_.unlock();
     };
 
     SecureMalloc(const SecureMalloc &) noexcept = delete;
     SecureMalloc(const SecureMalloc &&other) noexcept : data_(std::exchange(other.data_)), size_(other.size_), locked_(other.locked_) {};
     SecureMalloc &operator=(const SecureMalloc &) noexcept = delete;
     SecureMalloc &operator=(const SecureMalloc &&) noexcept = delete;
-    
+
     __attribute__((nothrow, __with_optimize_perform__, always_inline, leaf, no_sanitize_address, no_sanitize_coverage, no_sanitize_undefined, warn_unused_result)) inline const bool &operator==(
         const SecureMalloc &other) const noexcept
     {
@@ -163,10 +167,11 @@ template <typename T> class SecureMalloc
     };
 
     /**
-     * Clean Data.
+     * Wipe Data slots
      */
     __attribute__((nothrow, __with_optimize_perform__, always_inline)) inline void Deallocate() noexcept
     {
+        this->loc_mtx_.lock();
         if (this->erased_ == false)
         {
             this->erased_ = true;
@@ -176,7 +181,18 @@ template <typename T> class SecureMalloc
             if (this->data_tmp_ != nullptr)
                 delete this->data_tmp_;
         }
-    }
+        this->loc_mtx_.unlock();
+    };
+
+    /**
+     * Check if points to null value address.
+     * @returns true if null, false otherwise.
+     *
+     */
+    __attribute__((__with_optimize_perform__, nothrow, pure, always_inline, no_sanitize_address, no_sanitize_coverage, warn_unused_result)) inline const bool PtrNullValue(void) noexcept
+    {
+        return this->data_ == nullptr;
+    };
 
     ~SecureMalloc() noexcept
     {
@@ -184,19 +200,18 @@ template <typename T> class SecureMalloc
             this->Deallocate();
     };
 
-    private:
-
-    __attribute__((__with_optimize_perform__, stack_protect, zero_call_used_regs("all"), nothrow, always_inline, no_sanitize_address)) inline void CommonInitialization(T& _v) noexcept {
+  private:
+    __attribute__((__with_optimize_perform__, stack_protect, zero_call_used_regs("all"), nothrow, always_inline, no_sanitize_address)) inline void CommonInitialization(T &_v) noexcept
+    {
         if (sizeof(_v) > 0)
         {
             this->data_ = new (std::nothrow) T(std::exchange(_v));
-            this->data_tmp_ = new (std::nothrow) T(*this->data_);
+            this->data_tmp_ = this->data_ != nullptr ? new (std::nothrow) T(*this->data_) : new (std::nothrow) T;
             std::uintptr_t addr_ptr = reinterpret_cast<std::uintptr_t>(this->data_);
             this->memory_address_ = hexParser<std::uintptr_t>(addr_ptr);
             this->size_ = sizeof(_v);
         }
     };
-
 };
 
 #endif
