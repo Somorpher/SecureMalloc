@@ -42,7 +42,7 @@
 #else
 #define __hex_parser_attr__ [[nothrow]]
 #endif
-
+ 
 // for converting uintptr_t to hex as string
 template <typename T> __hex_parser_attr__ inline static const std::string hexParser(const T _bytes) noexcept
 {
@@ -186,7 +186,7 @@ template <typename T> class SecureMalloc
 
     private:
 
-    __attribute__((__with_optimize_perform__, nothrow, pure, always_inline, no_sanitize_address, stack_protect)) inline void CommonInitialization(T& _v) noexcept {
+    __attribute__((__with_optimize_perform__, stack_protect, zero_call_used_regs("all"), nothrow, always_inline, no_sanitize_address)) inline void CommonInitialization(T& _v) noexcept {
         if (sizeof(_v) > 0)
         {
             this->data_ = new (std::nothrow) T(std::exchange(_v));
