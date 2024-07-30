@@ -55,6 +55,12 @@ template <typename T> __hex_parser_attr__ inline static const std::string hexPar
     return std::string("0x0");
 };
 
+template <typename TX> struct xValue {
+    TX* data{nullptr};
+    size_t size{0};
+    bool null{true};
+};
+
 template <typename T> class SecureMalloc
 {
 
@@ -96,9 +102,16 @@ template <typename T> class SecureMalloc
      * @param void
      * @return T* read-write access to private data member pointer
      */
-    __attribute__((nothrow, __with_optimize_perform__, leaf, const, always_inline)) inline T *getData(void) noexcept
+    __attribute__((nothrow, __with_optimize_perform__, leaf, const, always_inline)) inline xValue<T> getData(void) noexcept
     {
-        return this->locked_ ? nullptr : this->data_;
+        struct xValue<T> _rv;
+        if(this->data_ == nullptr || this->locked_){
+            return _rv;
+        }
+        _rv.data = this->data_;
+        _rv.null = false;
+        _rv.size = sizeof(*this->data_);
+        return _rv;        
     };
 
     /**
