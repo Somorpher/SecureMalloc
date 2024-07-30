@@ -9,65 +9,65 @@
  * DateTime        = Tue Jul 30 17:38:52 UTC 2024                |
  *                                                               |
  * --------------------------------------------------------------
- * 
- * 
- * 
+ *
+ *
+ *
  * The SecureMalloc class is a C++ class designed to manage memory allocation and deallocation
- * for a given type T. The class provides a secure way to allocate and deallocate memory, 
- * ensuring thread safety and preventing common memory-related issues such as memory leaks 
+ * for a given type T. The class provides a secure way to allocate and deallocate memory,
+ * ensuring thread safety and preventing common memory-related issues such as memory leaks
  * and double-free errors.
- * 
+ *
  * ----------------
  * Class Structure |
- * ---------------- 
- * 
+ * ----------------
+ *
  * The SecureMalloc class is defined as a template class, taking a single type parameter T.
- * The class has a private member variable idx0_data_ of type T, which represents the 
- * allocated memory block. Additionally, the class has a private member variable data_tmp_ 
- * of type T, which serves as a temporary storage for the allocated memory block. 
- * The class also has several private member functions, including InitializeBlock, 
- * Allocate, Lock, Unlock, and Deallocate. These functions are responsible for initializing 
- * the allocated memory block, allocating and deallocating memory, locking and unlocking access 
+ * The class has a private member variable idx0_data_ of type T, which represents the
+ * allocated memory block. Additionally, the class has a private member variable data_tmp_
+ * of type T, which serves as a temporary storage for the allocated memory block.
+ * The class also has several private member functions, including InitializeBlock,
+ * Allocate, Lock, Unlock, and Deallocate. These functions are responsible for initializing
+ * the allocated memory block, allocating and deallocating memory, locking and unlocking access
  * to the memory block, and deallocating the memory block, respectively.
- * 
+ *
  * ------------------
  * Memory Management |
  * ------------------
- * 
- * The SecureMalloc class uses a custom memory management scheme, which involves allocating 
- * memory using the new operator and storing the allocated memory block in the idx0_data_ 
- * member variable. The class also uses a temporary storage data_tmp_ to store the allocated 
- * memory block, which is used to prevent memory leaks in case of exceptions. provides 
- * several methods for allocating and deallocating memory, including Allocate and Deallocate. 
- * The Allocate method allocates a new memory block of size T and stores it in the idx0_data_ 
- * member variable. The Deallocate method deallocates the allocated memory block and sets the 
+ *
+ * The SecureMalloc class uses a custom memory management scheme, which involves allocating
+ * memory using the new operator and storing the allocated memory block in the idx0_data_
+ * member variable. The class also uses a temporary storage data_tmp_ to store the allocated
+ * memory block, which is used to prevent memory leaks in case of exceptions. provides
+ * several methods for allocating and deallocating memory, including Allocate and Deallocate.
+ * The Allocate method allocates a new memory block of size T and stores it in the idx0_data_
+ * member variable. The Deallocate method deallocates the allocated memory block and sets the
  * idx0_data_ member variable to nullptr.
- * 
+ *
  * --------------
  * Thread Safety |
  * --------------
- * 
- * The SecureMalloc class is designed to be thread-safe, using a mutex (loc_mtx_) to synchronize 
- * access to the allocated memory block. The Lock and Unlock methods are used to acquire and 
- * release the mutex, respectively, ensuring that only one thread can access the allocated memory 
+ *
+ * The SecureMalloc class is designed to be thread-safe, using a mutex (loc_mtx_) to synchronize
+ * access to the allocated memory block. The Lock and Unlock methods are used to acquire and
+ * release the mutex, respectively, ensuring that only one thread can access the allocated memory
  * block at a time.
- * 
+ *
  * -------------------------
  * Attributes and Notations |
  * -------------------------
  *
- * The SecureMalloc class uses several attributes and notations, including __attr_inj_idxX__ 
- * and __with_optimize_perform__. These attributes and notations are used to optimize the 
+ * The SecureMalloc class uses several attributes and notations, including __attr_inj_idxX__
+ * and __with_optimize_perform__. These attributes and notations are used to optimize the
  * performance of the class and ensure that the allocated memory block is properly aligned and padded.
- * 
+ *
  * -----------------------------
  * Constructors and Destructors |
  * -----------------------------
- * 
- * The SecureMalloc class has several constructors, including a default constructor, 
+ *
+ * The SecureMalloc class has several constructors, including a default constructor,
  * a copy constructor, and a move constructor.
- * 
-*/
+ *
+ */
 #pragma once
 
 #ifndef _GLIBCXX_STRING
@@ -196,10 +196,6 @@ template <typename T> class SecureMalloc
 #endif
 
   public:
-    /**
-     * Default Empty initialization constructor
-     */
-
     __attr_inj_idx3__ SecureMalloc() noexcept
     {
         this->idx0_data_ = new (std::nothrow) T;
@@ -208,23 +204,17 @@ template <typename T> class SecureMalloc
         this->memory_address_ = hexParser<std::uintptr_t>(addr_ptr);
         this->idx1_size_ = sizeof(T);
     };
-    /**
-     * T& reference argument initialization constructor
-     */
+
     __attr_inj_idx4__ explicit SecureMalloc(T &_v) noexcept
     {
         this->InitializeBlock(_v);
     };
-    /**
-     * T* Pointer argument initialization constructor
-     */
+
     __attr_inj_idx5__ explicit SecureMalloc(T *__restrict__ _v) noexcept
     {
         this->InitializeBlock(std::move_if_noexcept(_v));
     };
-    /**
-     * move semantic const argument initialization constructor
-     */
+
     __attr_inj_idx6__ explicit SecureMalloc(T &&_v) noexcept
     {
         this->InitializeBlock(std::move_if_noexcept(_v));
@@ -248,9 +238,9 @@ template <typename T> class SecureMalloc
     };
 
     /**
-     * get idx0_data_ section.
+     * get idx0_data_ data block.
      * @param void
-     * @return SafeDataAccess<T> read-only access to private data member pointer
+     * @return SafeDataAccess<T> read-only
      */
     __attr_inj_idx9__ inline const SafeDataAccess<T> getData(void) noexcept
     {
@@ -266,9 +256,9 @@ template <typename T> class SecureMalloc
     };
 
     /**
-     * get idx0_data_ section.
+     * get idx0_data_ raw block.
      * @param void
-     * @return T* read-write access to private data member pointer
+     * @return T* read-write
      */
     __attr_inj_idx10__ inline T *getRawPtr(void) noexcept
     {
@@ -276,9 +266,9 @@ template <typename T> class SecureMalloc
     };
 
     /**
-     * get memory address section.
+     * get memory address.
      * @param void
-     * @return std::intptr_t read-only access to private data member pointer address_
+     * @return std::intptr_t read-only
      */
     __attr_inj_idx11__ inline const std::string getAddress(void) noexcept
     {
@@ -286,7 +276,7 @@ template <typename T> class SecureMalloc
     };
 
     /**
-     * set idx0_data_ section.
+     * set idx0_data_ block value.
      * @param T& new data
      */
     __attr_inj_idx12__ inline void Allocate(T &_d) noexcept
@@ -301,7 +291,7 @@ template <typename T> class SecureMalloc
         this->loc_mtx_.unlock();
     };
     /**
-     * set idx0_data_ section.
+     * set idx0_data_ block value.
      * @param T new data
      */
     __attr_inj_idx13__ inline void Allocate(const T _d) noexcept
@@ -317,7 +307,7 @@ template <typename T> class SecureMalloc
     };
 
     /**
-     * Check if idx0_data_ section is locked_!
+     * Check if idx0_data_ locked!
      */
     __attr_inj_idx14__ inline const bool isLocked(void) const noexcept
     {
@@ -325,7 +315,7 @@ template <typename T> class SecureMalloc
     };
 
     /**
-     * Lock Access to idx0_data_ section.
+     * Lock idx0_data_ access.
      */
     __attr_inj_idx15__ inline void Lock(void) noexcept
     {
@@ -335,7 +325,7 @@ template <typename T> class SecureMalloc
     };
 
     /**
-     * Unlock access to idx0_data_ section
+     * Unlock idx0_data_ access
      */
     __attr_inj_idx0A__ inline void Unlock(void) noexcept
     {
@@ -345,7 +335,7 @@ template <typename T> class SecureMalloc
     };
 
     /**
-     * Wipe Data slots
+     * Wipe Data
      */
     __attr_inj_idx0B__ inline void Deallocate() noexcept
     {
@@ -380,8 +370,8 @@ template <typename T> class SecureMalloc
 
   private:
     /**
-     * Deals with l-value data/object
-     * @param T& l-value reference to _v(data to allocate)
+     * l-value reference block initialization
+     * @param T&
      * @returns void
      */
     __attr_inj_idx0D__ inline void InitializeBlock(T &_v) noexcept
@@ -396,8 +386,8 @@ template <typename T> class SecureMalloc
         }
     };
     /**
-     * Deals with l-value/r-value object/data
-     * @param T* restricted l-value/r-value pointer address to _v(data to allocate)
+     * l-value reference block initialization
+     * @param T*
      * @returns void
      */
     __attr_inj_idx0E__ inline void InitializeBlock(T *__restrict__ _v) noexcept
@@ -412,8 +402,8 @@ template <typename T> class SecureMalloc
         }
     };
     /**
-     * Deals with r-value data/object, l-value will not work as object needs to be moved with std::move.
-     * @param T&& r-value reference to _v(data to allocate)
+     * r-value/l-value reference block initialization
+     * @param T&&
      * @returns void
      */
     __attr_inj_idx0F__ inline void InitializeBlock(T &&_v) noexcept
