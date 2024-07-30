@@ -55,8 +55,9 @@ template <typename T> __hex_parser_attr__ inline static const std::string hexPar
     return std::string("0x0");
 };
 
-template <typename TX> struct xValue {
-    TX* data{nullptr};
+template <typename TX> struct xValue
+{
+    TX *data{nullptr};
     size_t size{0};
     bool null{true};
 };
@@ -97,6 +98,24 @@ template <typename T> class SecureMalloc
         this->CommonInitialization(std::move(_v));
     };
 
+    // Delete operators
+    SecureMalloc(const SecureMalloc &) noexcept = delete;
+    SecureMalloc(const SecureMalloc &&other) noexcept : data_(std::exchange(other.data_)), size_(other.size_), locked_(other.locked_) {};
+    SecureMalloc &operator=(const SecureMalloc &) noexcept = delete;
+    SecureMalloc &operator=(const SecureMalloc &&) noexcept = delete;
+
+    // Comparision operators
+    __attribute__((nothrow, __with_optimize_perform__, always_inline, leaf, no_sanitize_address, no_sanitize_coverage, no_sanitize_undefined, warn_unused_result)) inline const bool operator==(
+        const SecureMalloc &other) const noexcept
+    {
+        return this->memory_address_.compare(other.address_) == 0;
+    };
+    __attribute__((nothrow, __with_optimize_perform__, always_inline, leaf, no_sanitize_address, no_sanitize_coverage, no_sanitize_undefined, warn_unused_result)) inline const bool operator!=(
+        const SecureMalloc &other) const noexcept
+    {
+        return this->memory_address_.compare(other.address_) != 0;
+    };
+
     /**
      * get data_ section.
      * @param void
@@ -105,13 +124,14 @@ template <typename T> class SecureMalloc
     __attribute__((nothrow, __with_optimize_perform__, leaf, const, always_inline)) inline xValue<T> getData(void) noexcept
     {
         struct xValue<T> _rv;
-        if(this->data_ == nullptr || this->locked_){
+        if (this->data_ == nullptr || this->locked_)
+        {
             return _rv;
         }
         _rv.data = this->data_;
         _rv.null = false;
         _rv.size = sizeof(*this->data_);
-        return _rv;        
+        return _rv;
     };
 
     /**
@@ -164,19 +184,8 @@ template <typename T> class SecureMalloc
     __attribute__((nothrow, __with_optimize_perform__, always_inline)) inline void Unlock(void) noexcept
     {
         this->loc_mtx_.lock();
-        this->locked_ =false;
+        this->locked_ = false;
         this->loc_mtx_.unlock();
-    };
-
-    SecureMalloc(const SecureMalloc &) noexcept = delete;
-    SecureMalloc(const SecureMalloc &&other) noexcept : data_(std::exchange(other.data_)), size_(other.size_), locked_(other.locked_) {};
-    SecureMalloc &operator=(const SecureMalloc &) noexcept = delete;
-    SecureMalloc &operator=(const SecureMalloc &&) noexcept = delete;
-
-    __attribute__((nothrow, __with_optimize_perform__, always_inline, leaf, no_sanitize_address, no_sanitize_coverage, no_sanitize_undefined, warn_unused_result)) inline const bool &operator==(
-        const SecureMalloc &other) const noexcept
-    {
-        return this->memory_address_.compare(other.address_) == 0;
     };
 
     /**
