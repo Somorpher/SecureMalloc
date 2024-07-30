@@ -70,11 +70,7 @@ template <typename T> class SecureMalloc
     bool erased_ = false;
     std::string memory_address_;
     std::mutex loc_mtx_;
-
-  public:
     __attribute__((mode(__pointer__))) T *data_ = nullptr;
-
-  private:
     __attribute__((mode(__word__))) size_t size_ = 0UL;
     __attribute__((mode(__pointer__))) T *data_tmp_ = nullptr;
 
