@@ -37,6 +37,14 @@ int main(int argc, char *argv[]) {
 };
 ```
 
+### Allocate new Data value into Block
+
+```cpp
+// allocate new value, this will move data and transfer ownership,
+// good for cases where data being allocated does not support copy operations
+    StrAlloc.Allocate("another string value");
+```
+
 ### De-Allocate/Destroy Block
 
 ```cpp
@@ -75,11 +83,45 @@ int main(int argc, char *argv[]) {
     StrAlloc.Unlock();    // unlocks access to data block.
 ```
 
-
-
-### Allocate new Data value into Block
+### Use Case Example
 
 ```cpp
-    StrAlloc.Allocate("another string value");    // allocate new value
-```
+// include headers, main, etc...
 
+    std::vector<int> IV; // vector of interest
+
+    SecureMalloc<std::vector<int>> V(IV); // alloc space
+
+    SafeDataAccess get_iv = V.getData(); // get allocated block
+
+    // check if data is unlocked and accessible
+    std::cout << "Before Locking Data:\n";
+    if (!V.getData().null)
+    {
+        std::cout << "Data Is Accessible..\n";
+        std::cout << "Vector Size: " << V.getData().data.size() << '\n';
+    }
+
+    // lock access
+    V.Lock();
+
+    std::cout << "After Locking Data:\n";
+    if (!V.getData().null)
+    {
+        std::cout << "Data Is Accessible..\n";
+    }
+    else
+    {
+        std::cout << "Data Is Locked!\n";
+    }
+
+    // if locked, this will not have any effect because data is now locked and writing to it in fact writes to tmp object!
+    V.getRawPtr()->push_back(1);
+    std::cout << "Vector Size After push(Locked):   " << V.getData().data.size() << '\n';
+
+    V.Unlock();
+    V.getRawPtr()->push_back(1);
+    std::cout << "Vector Size After push(Unlocked): " << V.getData().data.size() << '\n';
+
+    V.Deallocate(); // deallocation is optional...
+```
