@@ -1,3 +1,73 @@
+/**
+ *                         Reference Page
+ * --------------------------------------------------------------
+ *                                                               |
+ * Url             = https://github.com/Somorpher/SecureMalloc   |
+ *                                                               |
+ * Written by      = Somorpher                                   |
+ *                                                               |
+ * DateTime        = Tue Jul 30 17:38:52 UTC 2024                |
+ *                                                               |
+ * --------------------------------------------------------------
+ * 
+ * 
+ * 
+ * The SecureMalloc class is a C++ class designed to manage memory allocation and deallocation
+ * for a given type T. The class provides a secure way to allocate and deallocate memory, 
+ * ensuring thread safety and preventing common memory-related issues such as memory leaks 
+ * and double-free errors.
+ * 
+ * ----------------
+ * Class Structure |
+ * ---------------- 
+ * 
+ * The SecureMalloc class is defined as a template class, taking a single type parameter T.
+ * The class has a private member variable idx0_data_ of type T, which represents the 
+ * allocated memory block. Additionally, the class has a private member variable data_tmp_ 
+ * of type T, which serves as a temporary storage for the allocated memory block. 
+ * The class also has several private member functions, including InitializeBlock, 
+ * Allocate, Lock, Unlock, and Deallocate. These functions are responsible for initializing 
+ * the allocated memory block, allocating and deallocating memory, locking and unlocking access 
+ * to the memory block, and deallocating the memory block, respectively.
+ * 
+ * ------------------
+ * Memory Management |
+ * ------------------
+ * 
+ * The SecureMalloc class uses a custom memory management scheme, which involves allocating 
+ * memory using the new operator and storing the allocated memory block in the idx0_data_ 
+ * member variable. The class also uses a temporary storage data_tmp_ to store the allocated 
+ * memory block, which is used to prevent memory leaks in case of exceptions. provides 
+ * several methods for allocating and deallocating memory, including Allocate and Deallocate. 
+ * The Allocate method allocates a new memory block of size T and stores it in the idx0_data_ 
+ * member variable. The Deallocate method deallocates the allocated memory block and sets the 
+ * idx0_data_ member variable to nullptr.
+ * 
+ * --------------
+ * Thread Safety |
+ * --------------
+ * 
+ * The SecureMalloc class is designed to be thread-safe, using a mutex (loc_mtx_) to synchronize 
+ * access to the allocated memory block. The Lock and Unlock methods are used to acquire and 
+ * release the mutex, respectively, ensuring that only one thread can access the allocated memory 
+ * block at a time.
+ * 
+ * -------------------------
+ * Attributes and Notations |
+ * -------------------------
+ *
+ * The SecureMalloc class uses several attributes and notations, including __attr_inj_idxX__ 
+ * and __with_optimize_perform__. These attributes and notations are used to optimize the 
+ * performance of the class and ensure that the allocated memory block is properly aligned and padded.
+ * 
+ * -----------------------------
+ * Constructors and Destructors |
+ * -----------------------------
+ * 
+ * The SecureMalloc class has several constructors, including a default constructor, 
+ * a copy constructor, and a move constructor.
+ * 
+*/
 #pragma once
 
 #ifndef _GLIBCXX_STRING
