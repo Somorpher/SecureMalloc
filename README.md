@@ -127,3 +127,7 @@ int main(int argc, char *argv[]) {
 
     V.Deallocate(); // deallocation is optional...
 ```
+
+## Warning:
+
+this wont work with C style arrays like "int[1] or char[1]".
