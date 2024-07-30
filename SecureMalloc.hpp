@@ -155,7 +155,7 @@ namespace SecureMallocModule
 #endif
 
 // for converting uintptr_t to hex as string
-template <typename T> __hex_parser_attr__ inline static const std::string hexParser(const T _bytes) noexcept
+template <typename T> __hex_parser_attr__ constexpr static std::string hexParser(const T _bytes) noexcept
 {
     if (sizeof(_bytes) > 0) [[likely]]
     {
@@ -230,11 +230,11 @@ template <typename T> class SecureMalloc
     SecureMalloc &operator=(const SecureMalloc &&) noexcept = delete;
 
     // Comparision operators
-    __attr_inj_idx7__ inline const bool operator==(const SecureMalloc &other) const noexcept
+    __attr_inj_idx7__ constexpr const bool operator==(const SecureMalloc &other) const noexcept
     {
         return this->memory_address_.compare(other.address_) == 0;
     };
-    __attr_inj_idx8__ inline const bool operator!=(const SecureMalloc &other) const noexcept
+    __attr_inj_idx8__ constexpr const bool operator!=(const SecureMalloc &other) const noexcept
     {
         return this->memory_address_.compare(other.address_) != 0;
     };
@@ -244,7 +244,7 @@ template <typename T> class SecureMalloc
      * @param void
      * @return SafeDataAccess<T> read-only
      */
-    __attr_inj_idx9__ inline const SafeDataAccess<T> getData(void) noexcept
+    __attr_inj_idx9__ constexpr SafeDataAccess<T> getData(void) noexcept
     {
         struct SafeDataAccess<T> _rv;
         if (this->idx0_data_ == nullptr || this->locked_)
@@ -262,7 +262,7 @@ template <typename T> class SecureMalloc
      * @param void
      * @return T* read-write
      */
-    __attr_inj_idx10__ inline T *getRawPtr(void) noexcept
+    __attr_inj_idx10__ constexpr T *getRawPtr(void) noexcept
     {
         return this->locked_ ? this->data_tmp_ : this->idx0_data_;
     };
@@ -272,7 +272,7 @@ template <typename T> class SecureMalloc
      * @param void
      * @return std::intptr_t read-only
      */
-    __attr_inj_idx11__ inline const std::string getAddress(void) noexcept
+    __attr_inj_idx11__ constexpr const std::string getAddress(void) noexcept
     {
         return std::as_const(this->memory_address_);
     };
@@ -281,7 +281,7 @@ template <typename T> class SecureMalloc
      * set idx0_data_ block value.
      * @param T& new data
      */
-    __attr_inj_idx12__ inline void Allocate(T &_d) noexcept
+    __attr_inj_idx12__ constexpr void Allocate(T &_d) noexcept
     {
         this->loc_mtx_.lock();
         if (this->locked_)
@@ -296,7 +296,7 @@ template <typename T> class SecureMalloc
      * set idx0_data_ block value.
      * @param T new data
      */
-    __attr_inj_idx13__ inline void Allocate(const T _d) noexcept
+    __attr_inj_idx13__ constexpr void Allocate(const T _d) noexcept
     {
         this->loc_mtx_.lock();
         if (this->locked_)
@@ -311,7 +311,7 @@ template <typename T> class SecureMalloc
     /**
      * Check if idx0_data_ locked!
      */
-    __attr_inj_idx14__ inline const bool isLocked(void) const noexcept
+    __attr_inj_idx14__ constexpr bool isLocked(void) const noexcept
     {
         return this->locked_;
     };
@@ -319,7 +319,7 @@ template <typename T> class SecureMalloc
     /**
      * Lock idx0_data_ access.
      */
-    __attr_inj_idx15__ inline void Lock(void) noexcept
+    __attr_inj_idx15__ constexpr void Lock(void) noexcept
     {
         this->loc_mtx_.lock();
         this->locked_ = true;
@@ -329,7 +329,7 @@ template <typename T> class SecureMalloc
     /**
      * Unlock idx0_data_ access
      */
-    __attr_inj_idx0A__ inline void Unlock(void) noexcept
+    __attr_inj_idx0A__ constexpr void Unlock(void) noexcept
     {
         this->loc_mtx_.lock();
         this->locked_ = false;
@@ -339,7 +339,7 @@ template <typename T> class SecureMalloc
     /**
      * Wipe Data
      */
-    __attr_inj_idx0B__ inline void Deallocate() noexcept
+    __attr_inj_idx0B__ constexpr void Deallocate() noexcept
     {
         this->loc_mtx_.lock();
         if (this->erased_ == false)
@@ -359,7 +359,7 @@ template <typename T> class SecureMalloc
      * @returns true if null, false otherwise.
      *
      */
-    __attr_inj_idx0C__ inline const bool PtrNullValue(void) noexcept
+    __attr_inj_idx0C__ constexpr bool isBlockNull(void) noexcept
     {
         return this->idx0_data_ == nullptr;
     };
@@ -376,14 +376,13 @@ template <typename T> class SecureMalloc
      * @param T&
      * @returns void
      */
-    __attr_inj_idx0D__ inline void InitializeBlock(T &_v) noexcept
+    __attr_inj_idx0D__ constexpr void InitializeBlock(T &_v) noexcept
     {
         if (sizeof(_v) > 0)
         {
             this->idx0_data_ = new (std::nothrow) T(_v);
             this->data_tmp_ = new (std::nothrow) T;
-            std::uintptr_t addr_ptr = reinterpret_cast<std::uintptr_t>(this->idx0_data_);
-            this->memory_address_ = hexParser<std::uintptr_t>(addr_ptr);
+            this->memory_address_ = hexParser<std::uintptr_t>(reinterpret_cast<std::uintptr_t>(this->idx0_data_));
             this->idx1_size_ = sizeof(_v);
         }
     };
@@ -392,14 +391,13 @@ template <typename T> class SecureMalloc
      * @param T*
      * @returns void
      */
-    __attr_inj_idx0E__ inline void InitializeBlock(T *__restrict__ _v) noexcept
+    __attr_inj_idx0E__ constexpr void InitializeBlock(T *__restrict__ _v) noexcept
     {
         if (sizeof(*_v) > 0 && _v != nullptr)
         {
             this->idx0_data_ = std::move_if_noexcept(_v);
             this->data_tmp_ = new (std::nothrow) T;
-            std::uintptr_t addr_ptr = reinterpret_cast<std::uintptr_t>(this->idx0_data_);
-            this->memory_address_ = hexParser<std::uintptr_t>(addr_ptr);
+            this->memory_address_ = hexParser<std::uintptr_t>(reinterpret_cast<std::uintptr_t>(this->idx0_data_));
             this->idx1_size_ = sizeof(*_v);
         }
     };
@@ -408,14 +406,13 @@ template <typename T> class SecureMalloc
      * @param T&&
      * @returns void
      */
-    __attr_inj_idx0F__ inline void InitializeBlock(T &&_v) noexcept
+    __attr_inj_idx0F__ constexpr void InitializeBlock(T &&_v) noexcept
     {
         if (sizeof(_v) > 0)
         {
             this->idx0_data_ = new (std::nothrow) T(std::move_if_noexcept(_v));
             this->data_tmp_ = this->idx0_data_ != nullptr ? new (std::nothrow) T(*this->idx0_data_) : new (std::nothrow) T;
-            std::uintptr_t addr_ptr = reinterpret_cast<std::uintptr_t>(this->idx0_data_);
-            this->memory_address_ = hexParser<std::uintptr_t>(addr_ptr);
+            this->memory_address_ = hexParser<std::uintptr_t>(reinterpret_cast<std::uintptr_t>(this->idx0_data_));
             this->idx1_size_ = sizeof(_v);
         }
     };
