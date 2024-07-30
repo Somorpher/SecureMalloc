@@ -102,25 +102,26 @@ int main(int argc, char *argv[]) {
         std::cout << "Vector Size: " << V.getData().data.size() << '\n';
     }
 
-    // lock access
+    // lock access, from here, until access is locked, no write operations will have effect
+    // if try to write to memory location where data is stored, it will not raise any error, but
+    // will instead write to a tmp object created for this scenario.
     V.Lock();
 
     std::cout << "After Locking Data:\n";
-    if (!V.getData().null)
-    {
-        std::cout << "Data Is Accessible..\n";
-    }
-    else
-    {
-        std::cout << "Data Is Locked!\n";
-    }
 
-    // if locked, this will not have any effect because data is now locked and writing to it in fact writes to tmp object!
-    V.getRawPtr()->push_back(1);
+    if (!V.getData().null)
+        std::cout << "Data Is Accessible..\n";
+    else
+        std::cout << "Data Is Locked!\n";
+
+    V.getRawPtr()->push_back(1); // will not have any effect other than writing to a tmp object(T)
+
     std::cout << "Vector Size After push(Locked):   " << V.getData().data.size() << '\n';
 
-    V.Unlock();
-    V.getRawPtr()->push_back(1);
+    V.Unlock(); // unlock address
+
+    V.getRawPtr()->push_back(1); // this will write to data!
+
     std::cout << "Vector Size After push(Unlocked): " << V.getData().data.size() << '\n';
 
     V.Deallocate(); // deallocation is optional...
