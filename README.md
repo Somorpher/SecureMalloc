@@ -3,8 +3,25 @@ Thread-safe memory allocation class providing secure, optimized, and exception-s
 
 
 ## Description
-Secure Memory management utility, allows for secure memory allocation and secure memory DE-allocation. It ensures that data/object gets safely erased from memory as soon as the constructor is called by calling the allocated data object *Destructor* if any or the data only if no object is allocated. The class offers a basic lock/unlock mechanism to ensure at least some control over the memory block data by *locking* the instance and *unlocking* it, when locked, allocated object/data will not be available through the getter which retrieves memory block data living within private regions so cannot be referenced from outside. When used to allocate an entity(object/data) it automatically registers that memory block location into *memory_address* private member variable which can be referrenced from outside with `instance.getAddress()`. for lock/unlock mechanisms it uses a state variable representing lock or unlock state. There is not much you can do with it, just memory allocation/de-allocation in safe mode.
+SecureMalloc provides a secure and thread-safe way to allocate memory for a specific data type T. key details of the class:
 
+* Memory Allocation: The class allocates memory for an object of type T and provides methods for safely accessing and managing the allocated memory.
+
+* Thread Safety: It ensures thread safety by using a mutex (std::mutex) to control access to the allocated memory.
+
+* Memory Address: It stores a unique memory address of the allocated object as a hexadecimal string for identification purposes.
+
+* Locking Mechanism: The class allows locking and unlocking access to the allocated memory to prevent simultaneous modifications by multiple threads.
+
+* Data Management: It provides methods for allocating new data, retrieving data, checking if the memory is locked, and deallocating the memory.
+
+* Comparision Operators: It includes comparison operators (== and !=) to compare memory addresses of two SecureMalloc objects.
+
+* Optimization: The class includes attributes for optimization based on debugging mode, ensuring efficient performance.
+
+* Destructor: The destructor properly deallocates the memory if it has not been previously deallocated.
+
+the class is designed to provide a secure and efficient memory allocation mechanism with thread safety considerations.
 
 # How to Use
 
