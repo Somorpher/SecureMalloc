@@ -70,6 +70,8 @@
  */
 #pragma once
 
+namespace SecureMallocModule
+{
 #ifndef _GLIBCXX_STRING
 #include <string>
 #endif
@@ -420,3 +422,5 @@ template <typename T> class SecureMalloc
 };
 
 #endif
+
+}; // namespace SecureMallocModule
