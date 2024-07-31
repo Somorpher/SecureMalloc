@@ -124,17 +124,17 @@ int main(int argc, char *argv[]) {
     else
         std::cout << "Data Is Locked!\n";
 
-    V.getRawPtr()->push_back(1); // will not have any effect other than writing to a tmp object(T)
+    V.Release()->push_back(1); // will not have any effect other than writing to a tmp object(T)
 
     std::cout << "Vector Size After push(Locked):   " << V.getData().data.size() << '\n';
 
     V.Unlock(); // unlock address
 
-    V.getRawPtr()->push_back(1); // this will write to data!
+    V.Release()->push_back(1); // this will write to data!
 
     std::cout << "Vector Size After push(Unlocked): " << V.getData().data.size() << '\n';
 
-    V.Deallocate(); // deallocation is optional...
+    V.Reset(); // deallocation is optional...
 ```
 
 ## Warning:
