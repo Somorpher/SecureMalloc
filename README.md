@@ -1,8 +1,8 @@
-# SecureMalloc
+# SecureAlloc
 
 > Type = Module
 
-The Malloc class is a thread-safe, low-level memory management utility that provides a safe and efficient way to allocate and deallocate memory blocks of a specified type _cT, while preventing common memory-related issues such as memory leaks, dangling pointers, and data corruption, and offering various methods for allocation, deallocation, and introspection, including constructor overloads for default, copy, move, and value initialization, assignment operators, comparision operators, getters for block address and size, allocation and deallocation methods, and a destructor for automatic cleanup.
+The SecureAlloc class is a thread-safe, low-level memory management utility that provides a safe and efficient way to allocate and deallocate memory blocks of a specified type _cT, while preventing common memory-related issues such as memory leaks, dangling pointers, and data corruption, and offering various methods for allocation, deallocation, and introspection, including constructor overloads for default, copy, move, and value initialization, assignment operators, comparision operators, getters for block address and size, allocation and deallocation methods, and a destructor for automatic cleanup.
 
 ## Note:
 the class is not meant to work with the following types:
@@ -17,9 +17,9 @@ the class is not meant to work with the following types:
 ### basic Instatiation
 
 ```cpp
-#include "path/to/SecureMalloc.hpp"
+#include "path/to/SecureAlloc.hpp"
 int main(int argc, char *argv[]) {
-    SecureMalloc<std::string> StrAlloc; // this allocates a new string space block
+    SecureAlloc<std::string> StrAlloc; // this allocates a new string space block
     return 0;
 };
 ```
@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
 ```
 
 ### De-Allocate/Destroy Block
-> wipe/erase/delete/deallocate allocated block
+> free allocation address
 ```cpp
     // deallocates memory block, will automatically call allocated object destructor if any.
     StrAlloc.Free();
