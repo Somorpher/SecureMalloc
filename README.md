@@ -37,12 +37,22 @@ int main(int argc, char *argv[]) {
     StrAlloc.Free();
 ```
 
+### Check if null
+```cpp
+    if(!StrAlloc){...}
+```
 
 ### Get Address space
 > get the allocation address
 ```cpp
     // get memory location where object/data is stored as hex.
     std::uintptr_t = StrAlloc.GetAddress();
+```
+
+### Get allocation size
+> get the allocation size
+```cpp
+    size_t get_size = StrAlloc.GetSize();
 ```
 
 ### Get allocated data
