@@ -1,3 +1,24 @@
+#pragma once
+
+#ifndef __MODULE_SAFE_MEMORY_ALLOC__
+#define __MODULE_SAFE_MEMORY_ALLOC__ 1
+
+#include <cstdint>     // for std::uintptr_t
+#include <iostream>    // for std::cout and std::endl
+#include <mutex>       // for std::mutex and std::lock_guard
+#include <sstream>     // for std::stringstream
+#include <stdexcept>   // for std::stoll
+#include <type_traits> // for std::is_array_v, std::is_pointer_v, std::enable_if, and std::is_reference_v
+
+// Conditional includes to avoid multiple inclusions
+#ifndef _STDLIB_H
+#include <stdlib.h>
+#endif
+
+#ifndef _NEW_
+#include <new>
+#endif
+
 template <typename _cT, typename = std::enable_if<!std::is_reference_v<_cT> && !std::is_pointer_v<_cT>>> class SecureAlloc
 {
     _cT *_data_;
@@ -78,7 +99,7 @@ template <typename _cT, typename = std::enable_if<!std::is_reference_v<_cT> && !
     /**
      * Get allocated block.
      * @returns _cT*
-    */
+     */
     __attribute__((nothrow, leaf, optimize("0"), pure, always_inline, no_sanitize_address, no_sanitize_undefined, warn_unused_result)) constexpr _cT *Get(void) noexcept
     {
         return this->_is_free_ || !this->_is_init_ ? nullptr : this->_data_;
@@ -87,7 +108,7 @@ template <typename _cT, typename = std::enable_if<!std::is_reference_v<_cT> && !
     /**
      * Get allocated block size.
      * @returns const size_t&
-    */
+     */
     __attribute__((nothrow, leaf, optimize("0"), pure, always_inline, no_sanitize_address, no_sanitize_undefined, warn_unused_result)) constexpr size_t &GetSize(void) noexcept
     {
         return this->_block_size_;
@@ -96,7 +117,7 @@ template <typename _cT, typename = std::enable_if<!std::is_reference_v<_cT> && !
     /**
      * Get Allocation address.
      * @returns const std::uintptr_t&
-    */
+     */
     __attribute__((nothrow, leaf, optimize("0"), pure, always_inline, no_sanitize_address, no_sanitize_undefined, warn_unused_result)) constexpr std::uintptr_t &GetAddress(void) noexcept
     {
         return this->_address_;
@@ -105,7 +126,7 @@ template <typename _cT, typename = std::enable_if<!std::is_reference_v<_cT> && !
     /**
      * Allocate data.
      * @param const _cT data to allocate.
-    */
+     */
     __attribute__((nothrow, leaf, optimize("3"), access(read_only, 1), always_inline, no_sanitize_address, no_sanitize_undefined)) constexpr void Alloc(const _cT _mv) noexcept
     {
         std::lock_guard<std::mutex> _l(this->_Mtx_);
@@ -121,7 +142,7 @@ template <typename _cT, typename = std::enable_if<!std::is_reference_v<_cT> && !
     /**
      * check is allocation is null.
      * @returns bool
-    */
+     */
     __attribute__((nothrow, leaf, optimize("0"), pure, always_inline, no_sanitize_address, no_sanitize_undefined, warn_unused_result)) constexpr bool IsNullPtr(void) noexcept
     {
         return this->_is_free_ || !this->_is_init_ || this->_data_ == nullptr;
@@ -129,7 +150,7 @@ template <typename _cT, typename = std::enable_if<!std::is_reference_v<_cT> && !
 
     /**
      * Free allocated data
-    */
+     */
     __attribute__((nothrow, leaf, optimize("3"), always_inline, stack_protect, no_sanitize_address, no_sanitize_undefined)) inline void Free(void) noexcept
     {
         std::lock_guard<std::mutex> _l(this->_Mtx_);
@@ -148,21 +169,22 @@ template <typename _cT, typename = std::enable_if<!std::is_reference_v<_cT> && !
     };
 
   private:
-
-  /**
-   * convert dec to hex.
-   * @param const std::uintptr_t&
-   * @returns const std::uintptr_t
-  */
+    /**
+     * convert dec to hex.
+     * @param const std::uintptr_t&
+     * @returns const std::uintptr_t
+     */
     const std::uintptr_t __HexAddress(const std::uintptr_t &_addr) noexcept
     {
-    size_t hex_value;
-    std::stringstream _p;
-    _p << std::hex << _addr;
-    hex_value = std::stoll(_p.str(), NULL, 16);
-    std::cout.setstate(std::ios_base::failbit);
-    std::cout <<"GOOD: " << std::hex << hex_value <<"\n";
-    std::cout.clear();
-    return hex_value;
+        size_t hex_value;
+        std::stringstream _p;
+        _p << std::hex << _addr;
+        hex_value = std::stoll(_p.str(), NULL, 16);
+        std::cout.setstate(std::ios_base::failbit);
+        std::cout << "GOOD: " << std::hex << hex_value << "\n";
+        std::cout.clear();
+        return hex_value;
     };
 };
+
+#endif
