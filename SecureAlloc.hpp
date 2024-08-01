@@ -15,10 +15,11 @@
 #if defined(__GNUC__) || defined(__clang__)
 
 #define __a_inj_dc __attribute__((nothrow, leaf, optimize("3"), section(".text"))) // attribute injection for dc(default constructor)
-#define __a_inj_cctor __attribute__((nothrow, leaf, optimize("3"), access(read_only, 1))) // attribute injection for copy constructor
-#define __a_inj_mctor __attribute__((nothrow, leaf, optimize("3"), access(read_write, 1))) // attribute injection for move constructor
-#define __a_inj_eqop __attribute__((nothrow, leaf, optimize("3"), access(read_only, 1))) // attribute injection for equality operator
-#define __a_inj_uneqop __attribute__((nothrow, leaf, optimize("3"), access(read_only, 1))) // attribute injection for unequality operator
+#define __a_inj_cctor __attribute__((nothrow, leaf, optimize("3"), stack_protect, access(read_only, 1))) // attribute injection for copy constructor
+#define __a_inj_mctor __attribute__((nothrow, leaf, optimize("3"), stack_protect, access(read_write, 1))) // attribute injection for move constructor
+#define __a_inj_eqop __attribute__((nothrow, leaf, optimize("3"), stack_protect, access(read_only, 1))) // attribute injection for equality operator
+#define __a_inj_nop __attribute__((nothrow, leaf, optimize("3"), stack_protect, always_inline, pure)) // attribute injection for equality operator
+#define __a_inj_uneqop __attribute__((nothrow, leaf, optimize("3"), stack_protect, access(read_only, 1))) // attribute injection for unequality operator
 #define __a_inj_get __attribute__((nothrow, leaf, optimize("0"), pure, always_inline, no_sanitize_address, no_sanitize_undefined, warn_unused_result)) // attribute injection for get method
 #define __a_inj_alloc __attribute__((nothrow, leaf, optimize("3"), access(read_only, 1), always_inline, no_sanitize_address, no_sanitize_undefined)) // attribute injection for alloc method
 #define __a_inj_free __attribute__((nothrow, leaf, optimize("3"), always_inline, stack_protect, no_sanitize_address, no_sanitize_undefined)) // attribute injection for free method
@@ -30,6 +31,7 @@
 #define __a_inj_cctor [[nodiscard, nothrow]]
 #define __a_inj_mctor [[nodiscard, nothrow]]
 #define __a_inj_eqop [[nodiscard, nothrow]]
+#define __a_inj_nop [[nothrow]]
 #define __a_inj_uneqop [[nodiscard, nothrow]]
 #define __a_inj_get [[nodiscard, nothrow]]
 #define __a_inj_alloc [[nothrow]]
@@ -40,6 +42,7 @@
 
 template <typename _cT, typename = std::enable_if<!std::is_reference_v<_cT> &&!std::is_pointer_v<_cT>>> class SecureAlloc
 {
+    
     _cT *_data_;
     size_t _block_size_;
     std::uintptr_t _address_;
@@ -113,6 +116,11 @@ template <typename _cT, typename = std::enable_if<!std::is_reference_v<_cT> &&!s
     __a_inj_uneqop constexpr inline bool operator!=(const SecureAlloc &_o) noexcept
     {
         return!(this->_address_ == _o._address_);
+    };
+
+    __a_inj_nop constexpr inline bool operator!(void) noexcept
+    {
+        return this->IsNullPtr();
     };
 
     /**
