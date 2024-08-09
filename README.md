@@ -14,7 +14,7 @@ the class is not meant to work with the following types:
 
 # How to Use
 
-### basic Instatiation
+### basic usage
 
 ```cpp
 #include "path/to/SecureAlloc.hpp"
